@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const uri = "mongodb+srv://shreepsd:shreepsd%402227@cluster0.9jzuy.mongodb.net/portfolio";
-const uri2 = "mongodb://localhost:27017/portfolio";
+// const uri2 = "mongodb://localhost:27017/portfolio";
 
 const DataBase= mongoose;
 await mongoose.connect(uri).then(()=>{

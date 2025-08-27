@@ -13,7 +13,13 @@ const storage = multer.diskStorage({
     }
   })
   
-  const upload = multer({ storage: storage })
+  const upload = multer({ 
+    storage: storage,
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit
+      fieldSize: 50 * 1024 * 1024  // 50MB field size limit
+    }
+  })
 
 
 postRouter.post("/",cookieValidation,upload.single("img"),(req,res,next)=>{

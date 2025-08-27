@@ -1,22 +1,17 @@
 import express from "express";
-import register from "../authentication/register.js";
-import "dotenv/config.js";
-
+import newRegister from "../controller/registerController.js";
 
 const registerRouter= express.Router();
 
-registerRouter.post("/",(req,res,next)=>{
-    console.log("its registerroute");
-    const {email, password , secret}= req.body;
-    if (secret == process.env.SECRET){
-        next();
-    }
-    else{
-        return res.json({
-            validKey:false
-        })
-    }
-    
-})
+registerRouter.post("/", (req, res, next) => {
+    console.log("=== Registration Route Hit ===");
+    console.log("Request body:", req.body);
+    console.log("Environment ADMIN_SECRET_KEY exists:", !!process.env.ADMIN_SECRET_KEY);
+    console.log("Environment SECRET exists:", !!process.env.SECRET);
+    next();
+});
+
+registerRouter.post("/", newRegister);
+
 export default registerRouter;
 

@@ -1,8 +1,8 @@
 import register from "../authentication/register.js";
 
 const newRegister=async(req,res)=>{
-    const {email , password} = req.body;
-    const addUser =await register(email,password);
+    const {email , password, secretKey} = req.body;
+    const addUser =await register(email,password,secretKey);
     res.json(addUser);
     
     

@@ -5,7 +5,7 @@ const addFrom= async (fName,mName,lName,emailId,phNO,adder,msg)=>{
     await form.insertMany({
         firstName:fName,
         middleName:mName,
-        lastName:lName,
+        lasName:lName,
         email:emailId,
         phoneNumber:phNO,
         adderess:adder,

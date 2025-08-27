@@ -29,6 +29,22 @@ const formSchema= new Schema({
     message:{
         type:String,
         require:true
+    },
+    replied:{
+        type:Boolean,
+        default:false
+    },
+    replyMessage:{
+        type:String,
+        require:false
+    },
+    repliedAt:{
+        type:Date,
+        require:false
+    },
+    createdAt:{
+        type:Date,
+        default:Date.now
     }
     
 });

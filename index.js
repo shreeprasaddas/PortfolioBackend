@@ -27,27 +27,18 @@ import solutionRoutes from './routes/solutionRoutes.js';
 
 const app = express();
 
-// CORS configuration for both development and production
 app.use(cors({
-    origin: [
-        'http://localhost:3000', 
-        'http://127.0.0.1:3000',
-        'https://vercel.app',
-        'https://*.vercel.app',
-        'https://*.netlify.app'
-    ],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Frontend URLs
     credentials: true, // Allow cookies to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     exposedHeaders: ['Set-Cookie']
 }));
-
 app.use(cookieParser());
 
 // Configure body parsers with increased limits
 app.use(express.urlencoded({ extended: false, limit: '50mb', parameterLimit: 50000 }));
 
-// Serve static files
 app.use(express.static('./public'))
 app.use(express.static('./uploads'))
 
@@ -69,31 +60,8 @@ app.use("/getAdmin", express.json({ limit: '50mb' }), adminFetchRouter);
 app.use("/getPortfolio", express.json({ limit: '50mb' }), portfolioFetchRoute);
 app.use("/contact-forms", express.json({ limit: '50mb' }), contactFormRoutes);
 
-// Health check endpoint
 app.get("/api", (req, res) => {
-    res.json({ 
-        "key": "hello",
-        "status": "Backend is running!",
-        "timestamp": new Date().toISOString(),
-        "environment": process.env.NODE_ENV || "development"
-    });
-});
-
-// Root endpoint
-app.get("/", (req, res) => {
-    res.json({ 
-        "message": "Portfolio Backend API",
-        "status": "Running",
-        "endpoints": [
-            "/api - Health check",
-            "/login - Admin login",
-            "/register - Admin registration",
-            "/projects - Project management",
-            "/getPortfolio - Portfolio data",
-            "/contact-forms - Contact form submissions",
-            "/solutions - Solutions management"
-        ]
-    });
+    res.json({ "key": "hello" });
 });
 
 // Debug endpoint to check environment (remove in production)
@@ -114,19 +82,12 @@ app.post("/form", express.json({ limit: '50mb' }), formValidate, async (req, res
     res.json({ err: !isFormAdded });
 })
 
-// Vercel deployment configuration
-const PORT = process.env.PORT || 5000;
-
-// Only start the server if we're not on Vercel
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-    app.listen(PORT, (err) => {
-        if (err) {
-            console.log("Failed to listen the server:", err);
-        } else {
-            console.log(`Server listening on port ${PORT}`);
-        }
-    });
-}
-
-// Export for Vercel
-export default app;
+const PORT = 5000;
+app.listen(PORT, (err) => {
+    if (err) {
+        console.log("faild to listen the server");
+    }
+    else {
+        console.log("listning.........");
+    }
+})

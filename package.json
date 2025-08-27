@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node --experimental-detect-module index.js",
+    "dev": "nodemon --experimental-detect-module index.js",
+    "setup": "node --experimental-detect-module setup-env.js",
+    "test:db": "node --experimental-detect-module test-mongodb-connection.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

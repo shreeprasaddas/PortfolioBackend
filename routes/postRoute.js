@@ -6,7 +6,8 @@ const postRouter= e.Router();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, './public');
+      const dest = process.env.NODE_ENV === 'production' ? '/tmp' : './public';
+      cb(null, dest);
     },
     filename: function (req, file, cb) {
       cb(null, `${Date.now()}-${file.originalname}`)
@@ -23,8 +24,9 @@ const storage = multer.diskStorage({
 
 
 postRouter.post("/",cookieValidation,upload.single("img"),(req,res,next)=>{
-    req.body.imgLink= req.file.path.toString();
-    console.log("img link in postroute: "+req.body.imgLink);
+    const filename = req.file ? `/${req.file.filename}` : "";
+    req.body.imgLink = filename;
+    console.log("img link in postroute: " + filename);
     next();
 });
 

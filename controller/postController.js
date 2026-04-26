@@ -8,18 +8,12 @@ import fs from 'fs';
 
 const postAdd= async(req,res)=>{
     const {tittle, link , imgLink, paragraph} =req.body;
-  
 
     const isAlreadyExist=await porject.findOne({tittle:tittle});
-    console.log("path"+imgLink);
     
     if(!isAlreadyExist){
         console.log("the real image link :"+imgLink)
-        const filePath = imgLink;
-        const parts = filePath.split("\\"); // Split by "/"
-        const newPath = `/${parts.slice(1).join('/')}`; // Join everything after the first part and add a leading "/"
-        console.log("new path :"+newPath); // Output: "/2024-10-07-image.jpg"
-        const postAdded= await addPost(tittle, link , newPath, paragraph);
+        const postAdded= await addPost(tittle, link , imgLink, paragraph);
 
         res.json({
             isPostAdded:postAdded

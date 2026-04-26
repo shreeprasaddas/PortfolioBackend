@@ -34,8 +34,8 @@ const app = express();
 const allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://frontend-ten-alpha-64.vercel.app',
-    'https://portfolio-frontend-react-mauve.vercel.app',
+    'https://frontend-ten-alpha-64.vercel.app/',
+
     ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [])
 ];
 
@@ -65,6 +65,9 @@ app.use(express.urlencoded({ extended: false, limit: '50mb', parameterLimit: 500
 
 app.use(express.static('./public'))
 app.use(express.static('./uploads'))
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static('/tmp'));
+}
 
 // Routes that need JSON parsing
 app.use("/login", express.json({ limit: '50mb' }), loginRouter, loginController);

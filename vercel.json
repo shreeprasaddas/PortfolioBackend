@@ -14,7 +14,7 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "FRONTEND_URL": "https://portfolio-frontend-react-mauve.vercel.app"
+    "FRONTEND_URL": "https://frontend-ten-alpha-64.vercel.app/"
   },
   "regions": ["bom1"]
 }

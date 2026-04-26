@@ -5,7 +5,7 @@ import 'dotenv/config.js';
 const signToken= async(Obj)=>{
     let Token;
     try{
-        Token=await jwt.sign({email:Obj.email,password:Obj.password},process.env.PRIVATEKEY,{expiresIn: '24h'});
+        Token=await jwt.sign({email:Obj.email,password:Obj.password},process.env.SECRET,{expiresIn: '24h'});
     }
     catch{
         Token=false;
@@ -17,7 +17,7 @@ const signToken= async(Obj)=>{
 const verfyToken= async(key)=>{
      let result;
      try{
-        result= await jwt.verify(key,process.env.PRIVATEKEY);
+        result= await jwt.verify(key,process.env.SECRET);
      }
      catch{
         result=false;

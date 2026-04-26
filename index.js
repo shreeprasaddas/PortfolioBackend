@@ -24,6 +24,8 @@ import projectRoutes from './routes/projectRoutes.js';
 import contactFormRoutes from './routes/contactFormRoutes.js';
 import fileManagementRoutes from './routes/fileManagementRoutes.js';
 import solutionRoutes from './routes/solutionRoutes.js';
+import configRoutes from './routes/configRoutes.js';
+import { seedConfig } from './Schema/configSchema.js';
 
 const app = express();
 
@@ -59,20 +61,13 @@ app.use("/", solutionRoutes);
 app.use("/getAdmin", express.json({ limit: '50mb' }), adminFetchRouter);
 app.use("/getPortfolio", express.json({ limit: '50mb' }), portfolioFetchRoute);
 app.use("/contact-forms", express.json({ limit: '50mb' }), contactFormRoutes);
+app.use("/config", express.json({ limit: '50mb' }), configRoutes);
+
+// Seed default config on server start
+seedConfig();
 
 app.get("/api", (req, res) => {
     res.json({ "key": "hello" });
-});
-
-// Debug endpoint to check environment (remove in production)
-app.get("/debug/env", (req, res) => {
-    res.json({ 
-        "ADMIN_SECRET_KEY_SET": !!process.env.ADMIN_SECRET_KEY,
-        "ADMIN_SECRET_KEY_VALUE": process.env.ADMIN_SECRET_KEY, // REMOVE THIS IN PRODUCTION!
-        "SECRET_VALUE": process.env.SECRET, // REMOVE THIS IN PRODUCTION!
-        "NODE_ENV": process.env.NODE_ENV || "development",
-        "PORT": process.env.PORT || "5000"
-    });
 });
 
 app.post("/form", express.json({ limit: '50mb' }), formValidate, async (req, res) => {

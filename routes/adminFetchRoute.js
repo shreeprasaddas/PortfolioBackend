@@ -6,8 +6,8 @@ import getAdmin from "../controller/adminDataFetchController.js";
 const adminFetchRouter= express.Router();
 
 
-adminFetchRouter.get("/",cookieValidation,(req,res,next)=>{
-    next();
+adminFetchRouter.get("/", cookieValidation, (req, res) => {
+    res.json({ message: "Use POST to fetch admin data" });
 });
 adminFetchRouter.post("/",cookieValidation,getAdmin);
 

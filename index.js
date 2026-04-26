@@ -34,11 +34,11 @@ const app = express();
 const allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://portfolio-frontend-react-mauve.vercel.app',
+    'https://frontend-ten-alpha-64.vercel.app/',
     ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [])
 ];
 
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (e.g. Postman, server-to-server)
         if (!origin) return callback(null, true);
@@ -51,10 +51,12 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     exposedHeaders: ['Set-Cookie']
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Handle OPTIONS preflight for all routes (important for Vercel serverless)
-app.options('*', cors());
+app.options('*', cors(corsOptions));
 app.use(cookieParser());
 
 // Configure body parsers with increased limits

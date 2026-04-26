@@ -7,30 +7,13 @@ import cookieValidation from "../middleware/cookieValidatin.js";
 
 const router = express.Router();
 
-// Configure multer for file uploads - use consistent uploads directory
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = path.join(process.cwd(), 'uploads');
-        
-        // Create uploads directory if it doesn't exist
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        // Create unique filename with timestamp
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Configure multer for MEMORY storage (not disk - suitable for Vercel)
+const storage = multer.memoryStorage();
 
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
-        fieldSize: 50 * 1024 * 1024  // 50MB field size limit
+        fileSize: 10 * 1024 * 1024 // 10MB limit
     },
     fileFilter: function (req, file, cb) {
         // Allow only image files
@@ -100,18 +83,21 @@ router.post("/", cookieValidation, upload.single('image'), async (req, res) => {
         console.log("=== PROJECT CREATION REQUEST ===");
         console.log("Headers:", req.headers['content-type']);
         console.log("Body:", req.body);
-        console.log("File:", req.file ? req.file.filename : 'No file');
+        console.log("File present:", !!req.file);
         
         const { tittle, link, paragraph } = req.body;
         
         // Handle image link
-        let imgLink = req.body.imgLink; // For base64 or URL images
+        let imgLink = req.body.imgLink; // For external URLs
         if (req.file) {
-            // If file was uploaded, use the file path with uploads directory
-            imgLink = '/uploads/' + req.file.filename;
+            // Convert file buffer to base64 data URI
+            const mimeType = req.file.mimetype;
+            const base64String = req.file.buffer.toString('base64');
+            imgLink = `data:${mimeType};base64,${base64String}`;
+            console.log("Converted image to base64, size:", base64String.length);
         }
         
-        console.log("Creating project with:", { tittle, link, imgLink, paragraph });
+        console.log("Creating project with:", { tittle, link, paragraph, hasImage: !!imgLink });
         
         const newProject = new project({ tittle, link, imgLink, paragraph });
         await newProject.save();
@@ -132,13 +118,16 @@ router.put("/:tittle", cookieValidation, upload.single('image'), async (req, res
         const { tittle: newTittle, link, paragraph } = req.body;
         
         // Handle image link
-        let imgLink = req.body.imgLink; // For base64 or URL images
+        let imgLink = req.body.imgLink; // For external URLs
         if (req.file) {
-            // If file was uploaded, use the file path with uploads directory
-            imgLink = '/uploads/' + req.file.filename;
+            // Convert file buffer to base64 data URI
+            const mimeType = req.file.mimetype;
+            const base64String = req.file.buffer.toString('base64');
+            imgLink = `data:${mimeType};base64,${base64String}`;
+            console.log("Converted image to base64, size:", base64String.length);
         }
         
-        console.log("Updating project with:", { newTittle, link, imgLink, paragraph });
+        console.log("Updating project with:", { newTittle, link, paragraph, hasImage: !!imgLink });
         
         const updateData = { tittle: newTittle || tittle, link, paragraph };
         if (imgLink) {

@@ -30,24 +30,11 @@ import { connectDB } from './databaseConnection/database_connection.js';
 import cookieValidation from './middleware/cookieValidatin.js';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 
 const app = express();
 
-// Configure multer for file uploads at /upload endpoint
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = path.join(process.cwd(), 'uploads');
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Configure multer for file uploads - use memory storage for Vercel compatibility
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -153,12 +140,15 @@ app.post("/upload", cookieValidation, upload.single('file'), async (req, res) =>
             return res.status(400).json({ error: "No file uploaded" });
         }
         
+        // Convert file buffer to base64
+        const base64String = req.file.buffer.toString('base64');
+        const dataUri = `data:${req.file.mimetype};base64,${base64String}`;
+        
         const fileInfo = {
-            filename: req.file.filename,
-            originalName: req.file.originalname,
+            filename: req.file.originalname,
             size: req.file.size,
-            path: `/uploads/${req.file.filename}`,
             mimetype: req.file.mimetype,
+            dataUri: dataUri,
             uploadedAt: new Date()
         };
         

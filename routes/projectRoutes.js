@@ -9,7 +9,8 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public');
+        const dest = process.env.NODE_ENV === 'production' ? '/tmp' : './public';
+        cb(null, dest);
     },
     filename: function (req, file, cb) {
         cb(null, `${Date.now()}-${file.originalname}`);
@@ -98,7 +99,7 @@ router.post("/", cookieValidation, upload.single('image'), async (req, res) => {
         let imgLink = req.body.imgLink; // For base64 or URL images
         if (req.file) {
             // If file was uploaded, use the file path
-            imgLink = req.file.filename;
+            imgLink = '/' + req.file.filename;
         }
         
         console.log("Creating project with:", { tittle, link, imgLink, paragraph });
@@ -125,7 +126,7 @@ router.put("/:tittle", cookieValidation, upload.single('image'), async (req, res
         let imgLink = req.body.imgLink; // For base64 or URL images
         if (req.file) {
             // If file was uploaded, use the file path
-            imgLink = req.file.filename;
+            imgLink = '/' + req.file.filename;
         }
         
         console.log("Updating project with:", { newTittle, link, imgLink, paragraph });

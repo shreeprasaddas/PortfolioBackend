@@ -10,8 +10,8 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = './uploads/';
-        if (!fs.existsSync(uploadPath)) {
+        const uploadPath = process.env.NODE_ENV === 'production' ? '/tmp' : './uploads/';
+        if (process.env.NODE_ENV !== 'production' && !fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
         cb(null, uploadPath);
@@ -153,7 +153,7 @@ router.post('/solutions', cookieValidation, upload.single('image'), async (req, 
         
         let imgLink = '';
         if (req.file) {
-            imgLink = req.file.filename;
+            imgLink = '/' + req.file.filename;
         } else if (req.body.imgLink) {
             imgLink = req.body.imgLink;
         }
@@ -238,7 +238,7 @@ router.put('/solutions/:id', cookieValidation, upload.single('image'), async (re
         
         let imgLink = existingSolution.imgLink;
         if (req.file) {
-            imgLink = req.file.filename;
+            imgLink = '/' + req.file.filename;
             // TODO: Delete old image file if it exists
         } else if (req.body.imgLink) {
             imgLink = req.body.imgLink;

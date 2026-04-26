@@ -1,19 +1,28 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import project from "../Schema/projectSchema.js";
 import cookieValidation from "../middleware/cookieValidatin.js";
 
 const router = express.Router();
 
-// Configure multer for file uploads
+// Configure multer for file uploads - use consistent uploads directory
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dest = process.env.NODE_ENV === 'production' ? '/tmp' : './public';
-        cb(null, dest);
+        const uploadPath = path.join(process.cwd(), 'uploads');
+        
+        // Create uploads directory if it doesn't exist
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        
+        cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        // Create unique filename with timestamp
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
@@ -98,8 +107,8 @@ router.post("/", cookieValidation, upload.single('image'), async (req, res) => {
         // Handle image link
         let imgLink = req.body.imgLink; // For base64 or URL images
         if (req.file) {
-            // If file was uploaded, use the file path
-            imgLink = '/' + req.file.filename;
+            // If file was uploaded, use the file path with uploads directory
+            imgLink = '/uploads/' + req.file.filename;
         }
         
         console.log("Creating project with:", { tittle, link, imgLink, paragraph });
@@ -125,8 +134,8 @@ router.put("/:tittle", cookieValidation, upload.single('image'), async (req, res
         // Handle image link
         let imgLink = req.body.imgLink; // For base64 or URL images
         if (req.file) {
-            // If file was uploaded, use the file path
-            imgLink = '/' + req.file.filename;
+            // If file was uploaded, use the file path with uploads directory
+            imgLink = '/uploads/' + req.file.filename;
         }
         
         console.log("Updating project with:", { newTittle, link, imgLink, paragraph });

@@ -2,19 +2,28 @@ import { verfyToken } from "../authentication/verifyToken.js";
 
 
 const cookieValidation= async(req,res,next)=>{
+    // Accept token from cookie OR Authorization header (for cross-domain deployments)
     const cookie = req.cookies.uid;
-    console.log("cookie from cookieVAlidation:"+cookie);
+    const authHeader = req.headers['authorization'];
+    const bearerToken = authHeader && authHeader.startsWith('Bearer ') 
+        ? authHeader.slice(7) 
+        : null;
+
+    const tokenToVerify = cookie || bearerToken;
     
-    if(!cookie){
-        console.log("No cookie found, rejecting request");
+    console.log("cookie from cookieValidation:", cookie ? 'present' : 'absent');
+    console.log("bearer token:", bearerToken ? 'present' : 'absent');
+    
+    if(!tokenToVerify){
+        console.log("No auth token found, rejecting request");
         return res.status(401).json({
             validUser:false,
             message: "Authentication required"
         });
     }
     
-    const isCookie= await verfyToken(cookie);
-    console.log("verifyToken data: "+ isCookie);
+    const isCookie= await verfyToken(tokenToVerify);
+    console.log("verifyToken result: "+ (isCookie ? 'valid' : 'invalid'));
 
     if(isCookie){
         next();
@@ -28,4 +37,4 @@ const cookieValidation= async(req,res,next)=>{
     }
 }
 
-export default cookieValidation;
+export default cookieValidation;

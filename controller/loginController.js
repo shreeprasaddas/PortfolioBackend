@@ -7,14 +7,15 @@ const loginController= async(req,res)=>{
     console.log(token);
     console.log(req.body);
     if(token){
-
+        const isProduction = process.env.NODE_ENV === 'production';
         res.cookie('uid', token.toString(), { 
             httpOnly: false, 
-            secure: false, // Set to true in production with HTTPS
-            sameSite: 'lax', // Allow cross-origin requests
+            secure: isProduction,       // true in production (HTTPS required for sameSite:'none')
+            sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-domain cookies
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
-        res.status(200).json({token:token });
+        // Return token in body so frontend can store in localStorage as fallback
+        res.status(200).json({ token: token.toString() });
         console.log("this is cookie form :"+ token.toString());
 
         
@@ -29,4 +30,4 @@ const loginController= async(req,res)=>{
 };
 
 
-export default loginController;
+export default loginController;

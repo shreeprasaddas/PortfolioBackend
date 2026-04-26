@@ -30,13 +30,31 @@ import { connectDB } from './databaseConnection/database_connection.js';
 
 const app = express();
 
+// Always allow the production frontend + any extra URLs from the env var
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://portfolio-frontend-react-mauve.vercel.app',
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [])
+];
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3000', 'http://127.0.0.1:3000'], // Frontend URLs
-    credentials: true, // Allow cookies to be sent
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (e.g. Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS: origin ${origin} not allowed`), false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     exposedHeaders: ['Set-Cookie']
 }));
+
+// Handle OPTIONS preflight for all routes (important for Vercel serverless)
+app.options('*', cors());
 app.use(cookieParser());
 
 // Configure body parsers with increased limits

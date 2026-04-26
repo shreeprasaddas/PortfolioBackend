@@ -26,6 +26,7 @@ import fileManagementRoutes from './routes/fileManagementRoutes.js';
 import solutionRoutes from './routes/solutionRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import { seedConfig } from './Schema/configSchema.js';
+import { connectDB } from './databaseConnection/database_connection.js';
 
 const app = express();
 
@@ -63,8 +64,17 @@ app.use("/getPortfolio", express.json({ limit: '50mb' }), portfolioFetchRoute);
 app.use("/contact-forms", express.json({ limit: '50mb' }), contactFormRoutes);
 app.use("/config", express.json({ limit: '50mb' }), configRoutes);
 
-// Seed default config on server start
-seedConfig();
+// Initialize database and seed config
+async function initializeApp() {
+    try {
+        await connectDB();
+        await seedConfig();
+    } catch (err) {
+        console.error("❌ Failed to initialize app:", err.message);
+    }
+}
+
+initializeApp();
 
 app.get("/api", (req, res) => {
     res.json({ "key": "hello" });

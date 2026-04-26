@@ -77,14 +77,8 @@ const connectDB = async () => {
     }
 };
 
-// Initialize database connection
-let DataBase;
-try {
-    await connectDB();
-    DataBase = mongoose;
-} catch (error) {
-    console.error('❌ Failed to initialize database connection:', error);
-    process.exit(1);
-}
+// Export connectDB function so it can be called from index.js
+export { connectDB };
 
-export default DataBase;
+// Default export (kept for backwards compatibility)
+export default mongoose;

@@ -30,7 +30,7 @@ import { seedConfig } from './Schema/configSchema.js';
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Frontend URLs
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3000', 'http://127.0.0.1:3000'], // Frontend URLs
     credentials: true, // Allow cookies to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
@@ -77,12 +77,14 @@ app.post("/form", express.json({ limit: '50mb' }), formValidate, async (req, res
     res.json({ err: !isFormAdded });
 })
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, (err) => {
     if (err) {
         console.log("faild to listen the server");
     }
     else {
-        console.log("listning.........");
+        console.log(`Listening on port ${PORT}`);
     }
-})
+});
+
+export default app;

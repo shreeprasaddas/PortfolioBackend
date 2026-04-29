@@ -73,7 +73,9 @@ const connectDB = async () => {
         console.error('❌ MongoDB Atlas connection failed:', error.message);
         console.error('🔍 Please check your connection string and network connection');
         console.error('💡 Make sure your IP address is whitelisted in MongoDB Atlas');
-        process.exit(1);
+        // ⚠️ DON'T call process.exit() in Vercel serverless - just log and continue
+        // The server can still handle requests even without DB initially
+        return null;
     }
 };
 

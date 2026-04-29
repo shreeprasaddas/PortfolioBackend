@@ -110,14 +110,29 @@ app.use("/config", express.json({ limit: '50mb' }), configRoutes);
 // Initialize database and seed config
 async function initializeApp() {
     try {
-        await connectDB();
-        await seedConfig();
+        const dbConnection = await connectDB();
+        if (dbConnection) {
+            await seedConfig();
+            console.log("✅ App initialization complete with database");
+        } else {
+            console.warn("⚠️ App running without database connection - some features may not work");
+        }
     } catch (err) {
-        console.error("❌ Failed to initialize app:", err.message);
+        console.error("❌ Error during initialization:", err.message);
+        console.warn("⚠️ Continuing without full initialization...");
     }
 }
 
 initializeApp();
+
+// Health check endpoint (should work even without DB)
+app.get("/", (req, res) => {
+    res.status(200).json({ 
+        status: "Backend server is running",
+        timestamp: new Date().toISOString(),
+        version: "1.0.0"
+    });
+});
 
 app.get("/api", (req, res) => {
     res.json({ "key": "hello" });

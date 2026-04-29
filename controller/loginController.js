@@ -25,7 +25,8 @@ const loginController= async(req,res)=>{
             res.setHeader('Set-Cookie', `uid=${token.toString()}; Path=/; Secure; SameSite=None; Max-Age=${24 * 60 * 60}`);
         }
         
-        console.log("✅ Cookie set successfully - Expires in 24 hours");\n        console.log("Cookie secure:", isProduction);
+        console.log("✅ Cookie set successfully - Expires in 24 hours");
+        console.log("Cookie secure:", isProduction);
         console.log("Token returned in response body for localStorage storage");
         
         // Return token in body so frontend can store in localStorage (primary storage)

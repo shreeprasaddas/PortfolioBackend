@@ -57,6 +57,9 @@ const allowedOrigins = [
     'http://127.0.0.1:3000',
     'https://frontend-ten-alpha-64.vercel.app',
     'https://shreepsd.com.np',
+    'https://www.shreepsd.com.np',  // WWW variant
+    'http://shreepsd.com.np',       // HTTP variant for testing
+    'http://www.shreepsd.com.np',   // HTTP www variant for testing
     ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [])
 ];
 

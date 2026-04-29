@@ -8,27 +8,33 @@ const loginController= async(req,res)=>{
     if(token){
         const isProduction = process.env.NODE_ENV === 'production';
         
-        // Set cookie with appropriate settings
+        // Token expiry: 24 hours
+        const tokenExpiry = 24 * 60 * 60 * 1000; // milliseconds
+        
+        // Set cookie with appropriate settings for persistence
         res.cookie('uid', token.toString(), { 
-            httpOnly: false,  // Allow JS to read (for verification), but we use Bearer header
+            httpOnly: false,  // Allow JS to read for verification
             secure: isProduction,  // HTTPS in production
             sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin (requires Secure)
-            maxAge: 24 * 60 * 60 * 1000  // 24 hours
+            maxAge: tokenExpiry,  // 24 hours
+            path: '/'  // Available across entire domain
         });
         
-        // Also set Secure flag explicitly in production for Vercel
+        // Also set explicit Set-Cookie header in production for Vercel
         if (isProduction) {
-            res.setHeader('Set-Cookie', `uid=${token.toString()}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${24 * 60 * 60}`);
+            res.setHeader('Set-Cookie', `uid=${token.toString()}; Path=/; Secure; SameSite=None; Max-Age=${24 * 60 * 60}`);
         }
         
-        console.log("Cookie set with secure:", isProduction);
-        console.log("Token returned in response body");
+        console.log("✅ Cookie set successfully - Expires in 24 hours");\n        console.log("Cookie secure:", isProduction);
+        console.log("Token returned in response body for localStorage storage");
         
-        // Return token in body so frontend can store in localStorage
+        // Return token in body so frontend can store in localStorage (primary storage)
+        // and cookies (fallback/backup)
         res.status(200).json({ 
             success: true,
             token: token.toString(),
-            message: "Login successful"
+            message: "Login successful - Session will persist for 24 hours",
+            expiresIn: 24 * 60 * 60  // seconds
         });
     }
     else{

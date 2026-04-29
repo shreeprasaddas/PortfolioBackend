@@ -87,15 +87,19 @@ router.post("/", cookieValidation, upload.single('image'), async (req, res) => {
         
         const { tittle, link, paragraph } = req.body;
         
-        // Handle image link
-        let imgLink = req.body.imgLink; // For external URLs
+        // Handle image link - only use valid image data/URLs
+        let imgLink = null;
         if (req.file) {
             // Convert file buffer to base64 data URI
             const mimeType = req.file.mimetype;
             const base64String = req.file.buffer.toString('base64');
             imgLink = `data:${mimeType};base64,${base64String}`;
             console.log("Converted image to base64, size:", base64String.length);
+        } else if (req.body.imgLink && req.body.imgLink !== 'No imgLink' && req.body.imgLink.trim()) {
+            // Use provided imgLink only if it's a valid URL or data URI
+            imgLink = req.body.imgLink;
         }
+        // Otherwise imgLink stays null
         
         console.log("Creating project with:", { tittle, link, paragraph, hasImage: !!imgLink });
         

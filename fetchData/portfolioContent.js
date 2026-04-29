@@ -16,9 +16,13 @@ const getPortfolioContent= async()=>{
             error:false
         }
     }
-    catch{
+    catch(err){
+        console.error("[ERROR] Failed to fetch portfolio content:", err.message);
+        console.error("[ERROR] Stack:", err.stack);
         portfolioContent={
-            error:true
+            error:true,
+            message:err.message,
+            data:[]
         }
     }
     return portfolioContent;

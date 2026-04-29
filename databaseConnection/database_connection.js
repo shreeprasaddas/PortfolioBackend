@@ -25,7 +25,7 @@ const finalUri = ensureDatabaseName(MONGODB_URI);
 // MongoDB Atlas connection options
 const connectionOptions = {
     maxPoolSize: 10, // Maintain up to 10 socket connections
-    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+    serverSelectionTimeoutMS: 30000, // Keep trying to send operations for 30 seconds (Vercel cold starts need more time)
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     family: 4 // Use IPv4, skip trying IPv6
 };

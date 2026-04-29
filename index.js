@@ -87,19 +87,16 @@ app.use(express.urlencoded({ extended: false, limit: '50mb', parameterLimit: 500
 
 app.use(express.static('./public'))
 app.use(express.static('./uploads'))
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('/tmp'));
-}
 
 // Routes that need JSON parsing
 app.use("/login", express.json({ limit: '50mb' }), loginRouter, loginController);
 app.use("/register", express.json({ limit: '50mb' }), registerRouter, newRegister);
 app.use("/login", express.json({ limit: '50mb' }), loginPageRouter, loginPageController);
 
-// Routes that handle file uploads (no JSON parsing)
-app.use("/addPost", postRouter, postAdd);
-app.use("/deletePost", postDeleteRouter, postDelete);
-app.use("/updatePost", updateRouter, postUpdate);
+// Routes that handle file uploads - these routes already handle multer internally
+app.use("/addPost", postRouter, express.json({ limit: '50mb' }), postAdd);
+app.use("/deletePost", express.json({ limit: '50mb' }), postDeleteRouter, postDelete);
+app.use("/updatePost", updateRouter, express.json({ limit: '50mb' }), postUpdate);
 app.use("/projects", projectRoutes);
 app.use("/files", fileManagementRoutes);
 app.use("/", solutionRoutes);

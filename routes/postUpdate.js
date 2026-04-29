@@ -1,27 +1,36 @@
 import multer from 'multer';
-import fs from 'fs/promises';
-import path from 'path';
 import cookieValidation from '../middleware/cookieValidatin.js';
-
+import porject from '../Schema/projectSchema.js';
 import { Router } from 'express';
 
 const updateRouter = Router();
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './public');
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
+
+// Use memory storage for Vercel compatibility (no disk writes)
+const storage = multer.memoryStorage();
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(file.originalname.toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
   }
 });
 
-const upload = multer({ storage: storage });
-
-// Middleware to handle file path
+// Middleware to convert file buffer to base64
 const handleFileUpload = (req, res, next) => {
   if (req.file) {
-    req.body.imgLink = req.file.path.replace(/\\/g, '/'); // Convert to forward slashes
+    const base64String = req.file.buffer.toString('base64');
+    const dataUri = `data:${req.file.mimetype};base64,${base64String}`;
+    req.body.imgLink = dataUri;
+    req.body.fileName = req.file.originalname;
+    req.body.fileMimeType = req.file.mimetype;
   }
   next();
 };
@@ -39,13 +48,7 @@ const postUpdate = async (req, res) => {
       return res.status(404).json({ isUpdated: false });
     }
 
-    // Delete old image if new image is uploaded
-    if (newImgLink && existingPost.imgLink) {
-      const oldFilePath = path.join(process.cwd(), 'public', existingPost.imgLink);
-      await fs.unlink(oldFilePath).catch(err => console.error('Error deleting old image:', err));
-    }
-
-    // Update post data
+    // Update post data (no need to delete old image on Vercel - it's base64 encoded in DB)
     const updateData = {
       tittle,
       link,
@@ -70,7 +73,7 @@ const postUpdate = async (req, res) => {
 };
 
 // Route setup
-updateRouter.post("/",cookieValidation,upload.single("img"),handleFileUpload,postUpdate);
+updateRouter.post("/", cookieValidation, upload.single("img"), handleFileUpload, postUpdate);
 
 export default updateRouter;
 

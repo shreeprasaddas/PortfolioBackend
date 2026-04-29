@@ -6,11 +6,18 @@ const solutionSchema = new Schema({
     description: { type: String, required: true },
     features: [{ type: String }], // Array of feature strings
     technologies: [{ type: String }], // Array of technology strings
-    imgLink: { type: String, required: true },
+    imgLink: { type: String, required: true }, // Can be base64 image or URL
     link: { type: String }, // Optional link to demo/details
     category: { type: String, required: true }, // e.g., "Web Development", "Mobile App", "AI/ML"
     status: { type: String, enum: ['Active', 'Completed', 'In Progress'], default: 'Active' },
     date: { type: Date, default: Date.now }
+});
+
+// Enable text indexing for search
+solutionSchema.index({
+    title: 'text',
+    description: 'text',
+    category: 'text'
 });
 
 const solution = DataBase.model('solution', solutionSchema);

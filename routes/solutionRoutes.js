@@ -1,26 +1,13 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import solution from '../Schema/solutionSchema.js';
 import cookieValidation from '../middleware/cookieValidatin.js';
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = process.env.NODE_ENV === 'production' ? '/tmp' : './uploads/';
-        if (process.env.NODE_ENV !== 'production' && !fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + file.originalname;
-        cb(null, uniqueSuffix);
-    }
-});
+// Configure multer for memory storage (Vercel compatible)
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -147,13 +134,17 @@ router.post('/solutions', cookieValidation, upload.single('image'), async (req, 
         console.log('=== SOLUTION CREATION REQUEST ===');
         console.log('Headers:', req.get('Content-Type'));
         console.log('Body:', req.body);
-        console.log('File:', req.file ? req.file.filename : 'No file');
+        console.log('File received:', req.file ? `${req.file.originalname} (${req.file.size} bytes)` : 'No file');
         
         const { title, description, features, technologies, link, category, status } = req.body;
         
         let imgLink = '';
         if (req.file) {
-            imgLink = '/' + req.file.filename;
+            // Convert image to base64
+            const base64Image = req.file.buffer.toString('base64');
+            const mimeType = req.file.mimetype;
+            imgLink = `data:${mimeType};base64,${base64Image}`;
+            console.log('Image converted to base64');
         } else if (req.body.imgLink) {
             imgLink = req.body.imgLink;
         }
@@ -183,7 +174,7 @@ router.post('/solutions', cookieValidation, upload.single('image'), async (req, 
             description,
             features: parsedFeatures,
             technologies: parsedTechnologies,
-            imgLink,
+            imgLink: imgLink ? 'base64 image' : 'none',
             link,
             category,
             status
@@ -223,7 +214,7 @@ router.put('/solutions/:id', cookieValidation, upload.single('image'), async (re
         console.log('=== SOLUTION UPDATE REQUEST ===');
         console.log('ID:', req.params.id);
         console.log('Body:', req.body);
-        console.log('File:', req.file ? req.file.filename : 'No new file');
+        console.log('File received:', req.file ? `${req.file.originalname} (${req.file.size} bytes)` : 'No new file');
         
         const solutionId = req.params.id;
         const { title, description, features, technologies, link, category, status } = req.body;
@@ -238,9 +229,12 @@ router.put('/solutions/:id', cookieValidation, upload.single('image'), async (re
         
         let imgLink = existingSolution.imgLink;
         if (req.file) {
-            imgLink = '/' + req.file.filename;
-            // TODO: Delete old image file if it exists
-        } else if (req.body.imgLink) {
+            // Convert image to base64
+            const base64Image = req.file.buffer.toString('base64');
+            const mimeType = req.file.mimetype;
+            imgLink = `data:${mimeType};base64,${base64Image}`;
+            console.log('Image converted to base64');
+        } else if (req.body.imgLink && req.body.imgLink !== existingSolution.imgLink) {
             imgLink = req.body.imgLink;
         }
         

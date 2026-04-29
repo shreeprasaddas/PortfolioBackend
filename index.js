@@ -90,8 +90,11 @@ app.use(express.static('./uploads'))
 
 // Routes that need JSON parsing
 app.use("/login", express.json({ limit: '50mb' }), loginRouter, loginController);
+app.use("/login/verify", cookieValidation, (req, res) => {
+    // Auth verification endpoint — used by frontend during session check
+    res.status(200).json({ validUser: true });
+});
 app.use("/register", express.json({ limit: '50mb' }), registerRouter, newRegister);
-app.use("/login", express.json({ limit: '50mb' }), loginPageRouter, loginPageController);
 
 // Routes that handle file uploads - these routes already handle multer internally
 app.use("/addPost", postRouter, express.json({ limit: '50mb' }), postAdd);

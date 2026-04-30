@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from 'url';
 import cookieValidation from "../middleware/cookieValidatin.js";
+import SiteConfig from "../Schema/configSchema.js";
 
 const router = express.Router();
 
@@ -220,5 +221,64 @@ function formatFileSize(bytes) {
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+
+// Download CV route
+router.get("/download-cv", async (req, res) => {
+    try {
+        // Fetch CV link from config
+        const config = await SiteConfig.findOne({ _singleton: true });
+        
+        if (!config || !config.cvLink) {
+            return res.status(404).json({ error: "CV not found in configuration" });
+        }
+        
+        const cvLink = config.cvLink;
+        
+        // Check if it's a URL (external link)
+        if (cvLink.startsWith('http://') || cvLink.startsWith('https://')) {
+            // If it's an external URL, redirect to it
+            return res.redirect(cvLink);
+        }
+        
+        // If it's a local file path
+        const filePath = path.join(process.cwd(), cvLink);
+        
+        // Security check: ensure the file is within uploads directory
+        const uploadsPath = path.join(process.cwd(), 'uploads');
+        const normalizedPath = path.normalize(filePath);
+        const normalizedUploadsPath = path.normalize(uploadsPath);
+        
+        if (!normalizedPath.startsWith(normalizedUploadsPath)) {
+            return res.status(403).json({ error: "Access denied: Invalid file path" });
+        }
+        
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: "CV file not found at specified path" });
+        }
+        
+        // Get file info
+        const stats = fs.statSync(filePath);
+        if (!stats.isFile()) {
+            return res.status(400).json({ error: "Invalid file path" });
+        }
+        
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="Shreeprasad_Resume.pdf"');
+        res.setHeader('Content-Length', stats.size);
+        
+        // Stream the file
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+        
+        fileStream.on('error', (error) => {
+            console.error('Error streaming file:', error);
+            res.status(500).json({ error: "Error downloading file" });
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 export default router;

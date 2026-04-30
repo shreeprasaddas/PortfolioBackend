@@ -4,19 +4,33 @@ import getPortfolioContent from "../fetchData/portfolioContent.js";
 
 const getPortfolio = async(req,res)=>{
     try {
+        console.log("[PORTFOLIO FETCH] Starting portfolio fetch request...");
+        
         const data = await getPortfolioContent();
+        
         if (data.error) {
-            console.warn("[WARN] Portfolio fetch returned error:", data.message);
-            return res.status(500).json(data);
+            console.warn("[PORTFOLIO FETCH WARNING] Portfolio fetch returned error:", data.message);
+            console.warn("[PORTFOLIO FETCH WARNING] Returning error response:", data);
+            // Return error with 200 status so frontend can handle it gracefully
+            return res.status(200).json(data);
         }
+        
+        console.log(`[PORTFOLIO FETCH] ✅ Successfully fetched ${data.Data?.length || 0} projects`);
         res.json(data);
     } catch (err) {
-        console.error("[ERROR] Portfolio controller error:", err.message);
-        res.status(500).json({
+        console.error("[PORTFOLIO FETCH ERROR] Unexpected error:", err.message);
+        console.error("[PORTFOLIO FETCH ERROR] Stack:", err.stack);
+        
+        // Return error response with 200 status and fallback data
+        const errorResponse = {
             error: true,
-            message: err.message,
-            data: []
-        });
+            message: err.message || "Failed to fetch portfolio",
+            Data: [],
+            no_of_post: 0
+        };
+        
+        console.error("[PORTFOLIO FETCH ERROR] Returning fallback response:", errorResponse);
+        res.status(200).json(errorResponse);
     }
 }
 

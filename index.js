@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 // Load environment variables
 dotenv.config();
@@ -159,6 +160,42 @@ app.get("/", (req, res) => {
 
 app.get("/api", (req, res) => {
     res.json({ "key": "hello" });
+});
+
+// Health check endpoint for database connection
+app.get("/health/db", async (req, res) => {
+    try {
+        const mongoStatus = {
+            connected: false,
+            connectionState: null,
+            dbName: null,
+            host: null
+        };
+        
+        if (mongoose.connection && mongoose.connection.readyState) {
+            mongoStatus.connected = mongoose.connection.readyState === 1;
+            mongoStatus.connectionState = mongoose.connection.readyState;
+            mongoStatus.dbName = mongoose.connection.name;
+            mongoStatus.host = mongoose.connection.host;
+        }
+        
+        res.json({
+            status: "Backend server is running",
+            timestamp: new Date().toISOString(),
+            database: mongoStatus,
+            environment: {
+                nodeEnv: process.env.NODE_ENV || 'development',
+                port: process.env.PORT || 5000,
+                mongoUriConfigured: !!process.env.MONGODB_URI
+            }
+        });
+    } catch (error) {
+        console.error("[HEALTH CHECK] Error:", error.message);
+        res.status(500).json({
+            status: "Error checking database health",
+            error: error.message
+        });
+    }
 });
 
 app.post("/form", express.json({ limit: '50mb' }), formValidate, async (req, res) => {
